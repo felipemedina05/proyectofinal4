@@ -2,25 +2,36 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Persona;
+use App\Models\Rol;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use PhpParser\Node\Expr\Cast\Array_;
 
 class UsuarioController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function index()
     {
-        //
+        $usuarios = Usuario::all();
+        foreach ($usuarios as $usuario) {
+            $persona = Persona::where('id', $usuario->id_personas)->get('primernombre');
+            $rol = Rol::where('id', $usuario->id_rol)->get('rol');
+            if ($persona->isNotEmpty()) {
+                $usuario->id_personas = $persona[0]['primernombre'];
+            }
+            if ($rol->isNotEmpty()) {
+                $usuario->id_rol = $rol[0]['rol'];
+            }
+        }
+        return $usuarios;
     }
 
     /**
      * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
      */
     public function create()
     {
@@ -29,31 +40,42 @@ class UsuarioController extends Controller
 
     /**
      * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        //
+
+        $usuario = new Usuario();
+        $usuario->id_personas = $request->id_personas;
+        $usuario->usuario = $request->usuario;
+        $usuario->clave = Hash::make($request->input('password'));
+        $usuario->habilitado = $request->habilitado;
+        $usuario->fecha = $request->fecha;
+        $usuario->id_rol = $request->id_rol;
+        $usuario->fecha_creacion = $request->fecha_creacion;
+        $usuario->fecha_modificacion = $request->fecha_modificacion;
+        $usuario->save();
+        return "Guardado exitoso";
     }
 
     /**
      * Display the specified resource.
-     *
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
      */
-    public function show(Usuario $usuario)
+    public function show($id)
     {
-        //
+        $usuarios = Usuario::find($id);
+        $persona = Persona::where('id', $usuarios->id_personas)->get('primernombre');
+        $rol = Rol::where('id', $usuarios->id_rol)->get('rol');
+        if ($persona->isNotEmpty()) {
+            $usuarios->id_personas = $persona[0]['primernombre'];
+        }
+        if ($rol->isNotEmpty()) {
+            $usuarios->id_rol = $rol[0]['rol'];
+        }
+        return $usuarios;
     }
 
     /**
      * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
      */
     public function edit(Usuario $usuario)
     {
@@ -62,24 +84,29 @@ class UsuarioController extends Controller
 
     /**
      * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Usuario $usuario)
+    public function update(Request $request, $id)
     {
-        //
+        $usuario = Usuario::find($id);
+        $usuario->id_personas = $request->id_personas;
+        $usuario->usuario = $request->usuario;
+        $usuario->clave = Hash::make($request->input('password'));
+        $usuario->habilitado = $request->habilitado;
+        $usuario->fecha = $request->fecha;
+        $usuario->id_rol = $request->id_rol;
+        $usuario->fecha_creacion = $request->fecha_creacion;
+        $usuario->fecha_modificacion = $request->fecha_modificacion;
+        $usuario->save();
+        return "Actualizado exitoso";
     }
 
     /**
      * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Usuario  $usuario
-     * @return \Illuminate\Http\Response
      */
-    public function destroy(Usuario $usuario)
+    public function destroy($id)
     {
-        //
+        $usuario = Usuario::find($id);
+        $usuario->delete();
+        return "Eliminado exitoso";
     }
 }
