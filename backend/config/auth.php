@@ -108,4 +108,13 @@ return [
 
     'password_timeout' => 10800,
 
+    'guards' => [
+        'api' => [
+            'driver' => 'jwt',
+            'provider' => 'users',
+        ],
+    ]
+
 ];
+
+
